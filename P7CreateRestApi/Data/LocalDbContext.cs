@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Dot.Net.WebApi.Domain;
+using Dot.Net.WebApi.Entities;
 
 namespace Dot.Net.WebApi.Data
 {
