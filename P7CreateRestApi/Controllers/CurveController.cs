@@ -1,58 +1,85 @@
-using Dot.Net.WebApi.Domain;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using P7CreateRestApi.Data;
+using P7CreateRestApi.Domain;
 
 namespace Dot.Net.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class CurveController : ControllerBase
     {
-        // TODO: Inject Curve Point service
+        private readonly LocalDbContext _context;
 
-        [HttpGet]
-        [Route("list")]
-        public IActionResult Home()
+        public CurveController(LocalDbContext context)
         {
-            return Ok();
+            _context = context;
         }
 
+        // GET: api/Curve
         [HttpGet]
-        [Route("add")]
-        public IActionResult AddCurvePoint([FromBody]CurvePoint curvePoint)
+        public async Task<IActionResult> GetAll()
         {
-            return Ok();
+            var curves = await _context.CurvePoints.ToListAsync();
+            return Ok(curves);
         }
 
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody]CurvePoint curvePoint)
+        // GET: api/Curve/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            // TODO: check data valid and save to db, after saving return bid list
-            return Ok();
+            var curve = await _context.CurvePoints.FindAsync(id);
+            if (curve == null)
+                return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
+
+            return Ok(curve);
         }
 
-        [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
-        {
-            // TODO: get CurvePoint by Id and to model then show to the form
-            return Ok();
-        }
-
+        // POST: api/Curve
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateCurvePoint(int id, [FromBody] CurvePoint curvePoint)
+        public async Task<IActionResult> Create([FromBody] CurvePoint curve)
         {
-            // TODO: check required fields, if valid call service to update Curve and return Curve list
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (curve.Term == null || curve.CurvePointValue == null)
+                return BadRequest(new { message = "Les champs Term et CurvePointValue sont requis." });
+
+            _context.CurvePoints.Add(curve);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id = curve.Id }, curve);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteBid(int id)
+        // PUT: api/Curve/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] CurvePoint curve)
         {
-            // TODO: Find Curve by Id and delete the Curve, return to Curve list
-            return Ok();
+            if (id != curve.Id)
+                return BadRequest(new { message = "L'identifiant ne correspond pas." });
+
+            var existingCurve = await _context.CurvePoints.FindAsync(id);
+            if (existingCurve == null)
+                return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
+
+            _context.Entry(existingCurve).CurrentValues.SetValues(curve);
+            await _context.SaveChangesAsync();
+
+            return Ok(existingCurve);
+        }
+
+        // DELETE: api/Curve/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var curve = await _context.CurvePoints.FindAsync(id);
+            if (curve == null)
+                return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
+
+            _context.CurvePoints.Remove(curve);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

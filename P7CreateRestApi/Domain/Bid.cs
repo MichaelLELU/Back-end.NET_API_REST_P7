@@ -1,4 +1,4 @@
-namespace Dot.Net.WebApi.Entities
+namespace P7CreateRestApi.Domain
 
 
 {
@@ -9,7 +9,7 @@ namespace Dot.Net.WebApi.Entities
         public string BidType { get; set; }
         public double? BidQuantity { get; set; }
         public double? AskQuantity { get; set; }
-        public double? BidValue { get; set; }  // renommé pour eviter le conflit avec la propriété Bid
+        public double? BidValue { get; set; }  
         public double? Ask { get; set; }
         public string Benchmark { get; set; }
         public DateTime? BidListDate { get; set; }

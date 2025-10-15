@@ -1,40 +1,87 @@
-using Dot.Net.WebApi.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using P7CreateRestApi.Data;     
+using P7CreateRestApi.Domain;     
+
 
 namespace Dot.Net.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class BidController : ControllerBase
     {
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody] Bid bidList)
+        private readonly LocalDbContext _context;
+
+        public BidController(LocalDbContext context)
         {
-            // TODO: check data valid and save to db, after saving return bid list
-            return Ok();
+            _context = context;
         }
 
+        // GET: api/Bid
         [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
+        public async Task<IActionResult> GetAll()
         {
-            return Ok();
+            var bids = await _context.Bids.ToListAsync();
+            return Ok(bids);
         }
 
+        // GET: api/Bid/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var bid = await _context.Bids.FindAsync(id);
+            if (bid == null)
+                return NotFound(new { message = $"Aucun Bid avec l'id {id}" });
+            return Ok(bid);
+        }
+
+        // POST: api/Bid
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateBid(int id, [FromBody] Bid bidList)
+        public async Task<IActionResult> Create([FromBody] Bid bid)
         {
-            // TODO: check required fields, if valid call service to update Bid and return list Bid
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Validation basique (exemple)
+            if (string.IsNullOrWhiteSpace(bid.Account))
+                return BadRequest(new { message = "Le champ Account est requis." });
+
+            _context.Bids.Add(bid);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id = bid.BidListId }, bid);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteBid(int id)
+        // PUT: api/Bid/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Bid bid)
         {
-            return Ok();
+            if (id != bid.BidListId)
+                return BadRequest(new { message = "L'identifiant ne correspond pas." });
+
+            var existingBid = await _context.Bids.FindAsync(id);
+            if (existingBid == null)
+                return NotFound(new { message = $"Aucun Bid trouvé avec l'id {id}" });
+
+            // Mise à jour sécurisée des champs
+            _context.Entry(existingBid).CurrentValues.SetValues(bid);
+            await _context.SaveChangesAsync();
+
+            return Ok(existingBid);
+        }
+
+        // DELETE: api/Bid/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var bid = await _context.Bids.FindAsync(id);
+            if (bid == null)
+                return NotFound(new { message = $"Aucun Bid trouvé avec l'id {id}" });
+
+            _context.Bids.Remove(bid);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

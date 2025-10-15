@@ -1,4 +1,4 @@
-namespace Dot.Net.WebApi.Entities
+namespace P7CreateRestApi.Domain
 {
     public class RuleName
     {
