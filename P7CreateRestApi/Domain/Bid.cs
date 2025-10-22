@@ -1,11 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace P7CreateRestApi.Domain
 
 
 {
     public class Bid
     {
-        public int BidListId { get; set; }
-        public string Account { get; set; }
+        [Key]
+        public int Id { get; set; }
+        public string? Account { get; set; }
         public string BidType { get; set; }
         public double? BidQuantity { get; set; }
         public double? AskQuantity { get; set; }
@@ -16,15 +19,15 @@ namespace P7CreateRestApi.Domain
         public string Commentary { get; set; }
         public string BidSecurity { get; set; }
         public string BidStatus { get; set; }
-        public string Trader { get; set; }
+        public string? Trader { get; set; }
         public string Book { get; set; }
         public string CreationName { get; set; }
         public DateTime? CreationDate { get; set; }
         public string RevisionName { get; set; }
         public DateTime? RevisionDate { get; set; }
         public string DealName { get; set; }
-        public string DealType { get; set; }
+        public string? DealType { get; set; }
         public string SourceListId { get; set; }
-        public string Side { get; set; }
+        public string? Side { get; set; }
     }
 }

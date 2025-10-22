@@ -58,7 +58,7 @@ namespace P7CreateRestApi.Repositories
         // 🔹 Vérifier si un Trade existe
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.Trades.AnyAsync(t => t.TradeId == id);
+            return await _context.Trades.AnyAsync(t => t.Id == id);
         }
     }
 }

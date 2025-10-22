@@ -1,36 +1,49 @@
-using P7CreateRestApi.Data;
+using Microsoft.AspNetCore.Identity;
 using P7CreateRestApi.Domain;
-using Microsoft.EntityFrameworkCore;
 
-namespace Dot.Net.WebApi.Repositories
+namespace P7CreateRestApi.Repositories
 {
     public class UserRepository
     {
-        public LocalDbContext DbContext { get; }
+        private readonly UserManager<User> _userManager;
 
-        public UserRepository(LocalDbContext dbContext)
+        public UserRepository(UserManager<User> userManager)
         {
-            DbContext = dbContext;
+            _userManager = userManager;
         }
 
-        public User FindByUserName(string userName)
+        // --- CREATE ---
+        public async Task<IdentityResult> CreateAsync(User user, string password)
         {
-            return DbContext.Users.Where(user => user.UserName == userName)
-                                  .FirstOrDefault();
+            return await _userManager.CreateAsync(user, password);
         }
 
-        public async Task<List<User>> FindAll()
+        // --- READ ---
+        public async Task<User?> FindByIdAsync(int id)
         {
-            return await DbContext.Users.ToListAsync();
+            return await _userManager.FindByIdAsync(id.ToString());
         }
 
-        public void Add(User user)
+        public async Task<User?> FindByUserNameAsync(string userName)
         {
+            return await _userManager.FindByNameAsync(userName);
         }
 
-        public User FindById(int id)
+        public IQueryable<User> GetAll()
         {
-            return null;
+            return _userManager.Users;
+        }
+
+        // --- UPDATE ---
+        public async Task<IdentityResult> UpdateAsync(User user)
+        {
+            return await _userManager.UpdateAsync(user);
+        }
+
+        // --- DELETE ---
+        public async Task<IdentityResult> DeleteAsync(User user)
+        {
+            return await _userManager.DeleteAsync(user);
         }
     }
 }

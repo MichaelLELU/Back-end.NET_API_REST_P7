@@ -46,14 +46,14 @@ namespace Dot.Net.WebApi.Controllers
                 return BadRequest(new { message = "BuyQuantity ou SellQuantity doit être renseigné." });
 
             var createdTrade = await _repository.AddAsync(trade);
-            return CreatedAtAction(nameof(GetById), new { id = createdTrade.TradeId }, createdTrade);
+            return CreatedAtAction(nameof(GetById), new { id = createdTrade.Id }, createdTrade);
         }
 
         // PUT: api/Trade/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Trade trade)
         {
-            if (id != trade.TradeId)
+            if (id != trade.Id)
                 return BadRequest(new { message = "L'identifiant ne correspond pas." });
 
             var existingTrade = await _repository.GetByIdAsync(id);

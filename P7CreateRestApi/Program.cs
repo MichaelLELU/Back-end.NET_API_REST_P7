@@ -1,22 +1,36 @@
-using Dot.Net.WebApi.Data;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using P7CreateRestApi.Data;
+using P7CreateRestApi.Domain;
+using P7CreateRestApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
-ConfigurationManager configuration = builder.Configuration;
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+// --- EF Core ---
 builder.Services.AddDbContext<LocalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// --- Identity ---
+builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
+{
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+})
+.AddEntityFrameworkStores<LocalDbContext>()
+.AddDefaultTokenProviders();
+
+// --- Repository ---
+builder.Services.AddScoped<UserRepository>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- Pipeline ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -24,7 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

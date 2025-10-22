@@ -56,7 +56,7 @@ namespace P7CreateRestApi.Repositories
         // 🔹 Vérifier l’existence d’un Bid
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.Bids.AnyAsync(b => b.BidListId == id);
+            return await _context.Bids.AnyAsync(b => b.Id == id);
         }
     }
 }

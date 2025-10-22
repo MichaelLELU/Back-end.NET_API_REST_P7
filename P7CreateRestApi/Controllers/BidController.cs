@@ -49,14 +49,14 @@ namespace Dot.Net.WebApi.Controllers
             _context.Bids.Add(bid);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetById), new { id = bid.BidListId }, bid);
+            return CreatedAtAction(nameof(GetById), new { id = bid.Id }, bid);
         }
 
         // PUT: api/Bid/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Bid bid)
         {
-            if (id != bid.BidListId)
+            if (id != bid.Id)
                 return BadRequest(new { message = "L'identifiant ne correspond pas." });
 
             var existingBid = await _context.Bids.FindAsync(id);
