@@ -2,7 +2,6 @@
 using P7CreateRestApi.Data;
 using P7CreateRestApi.Config;
 using P7CreateRestApi.Services;
-using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +17,7 @@ builder.Services.AddScoped<JwtService>();
 // --- Swagger / MVC ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerWithJwt();
 
 var app = builder.Build();
 
