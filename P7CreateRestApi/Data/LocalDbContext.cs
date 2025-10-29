@@ -5,13 +5,12 @@ using P7CreateRestApi.Domain;
 
 namespace P7CreateRestApi.Data
 {
-    public class LocalDbContext : IdentityDbContext<User, IdentityRole<int>, int>
-    {
-        public LocalDbContext(DbContextOptions<LocalDbContext> options) : base(options) { }
+    public class LocalDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
 
-        protected override void OnModelCreating(ModelBuilder builder)
+    {
+        public LocalDbContext(DbContextOptions<LocalDbContext> options)
+            : base(options)
         {
-            base.OnModelCreating(builder);
         }
 
         public DbSet<Bid> Bids { get; set; } = null!;
@@ -19,5 +18,10 @@ namespace P7CreateRestApi.Data
         public DbSet<CurvePoint> CurvePoints { get; set; } = null!;
         public DbSet<Rating> Ratings { get; set; } = null!;
         public DbSet<RuleName> RuleNames { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
     }
 }

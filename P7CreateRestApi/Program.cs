@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Data;
-using P7CreateRestApi.Domain;
-using P7CreateRestApi.Repositories;
+using P7CreateRestApi.Config;
+using P7CreateRestApi.Services;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,20 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LocalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// --- Identity ---
-builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
-{
-    options.Password.RequiredLength = 6;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireDigit = false;
-    options.Password.RequireUppercase = false;
-})
-.AddEntityFrameworkStores<LocalDbContext>()
-.AddDefaultTokenProviders();
+// --- Identity & JWT ---
+builder.Services.AddAppIdentity();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddScoped<JwtService>();
 
-// --- Repository ---
-builder.Services.AddScoped<UserRepository>();
-
+// --- Swagger / MVC ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -42,4 +34,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await RoleInitializer.SeedRolesAndAdminAsync(services);
+}
+
+await app.RunAsync();
