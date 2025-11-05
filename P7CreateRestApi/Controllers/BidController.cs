@@ -20,7 +20,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- LECTURE PUBLIQUE ---
-        [AllowAnonymous] 
+        [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -30,7 +30,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- LECTURE PAR ID ---
-        [AllowAnonymous] 
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Data;
@@ -17,6 +18,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // GET: api/Curve
+        [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -25,6 +27,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // GET: api/Curve/{id}
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -36,6 +39,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // POST: api/Curve
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CurvePoint curve)
         {
@@ -52,6 +56,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // PUT: api/Curve/{id}
+        [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CurvePoint curve)
         {
@@ -69,6 +74,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // DELETE: api/Curve/{id}
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

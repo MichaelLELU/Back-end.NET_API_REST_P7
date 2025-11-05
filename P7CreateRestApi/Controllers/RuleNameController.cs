@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Domain;
 using P7CreateRestApi.Repositories;
@@ -18,6 +19,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // GET: api/RuleName
         [HttpGet]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAll()
         {
             var rules = await _repository.GetAllAsync();
@@ -26,6 +28,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // GET: api/RuleName/{id}
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetById(int id)
         {
             var rule = await _repository.GetByIdAsync(id);
@@ -37,6 +40,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // POST: api/RuleName
         [HttpPost]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Create([FromBody] RuleName rule)
         {
             if (!ModelState.IsValid)
@@ -51,6 +55,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // PUT: api/RuleName/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Update(int id, [FromBody] RuleName rule)
         {
             if (id != rule.Id)
@@ -66,6 +71,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // DELETE: api/RuleName/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _repository.DeleteAsync(id);

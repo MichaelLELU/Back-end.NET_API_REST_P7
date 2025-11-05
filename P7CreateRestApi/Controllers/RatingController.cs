@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Data;
@@ -17,6 +18,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // GET: api/Rating
+        [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -25,6 +27,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // GET: api/Rating/{id}
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -37,6 +40,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // POST: api/Rating
         [HttpPost]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Create([FromBody] Rating rating)
         {
             if (!ModelState.IsValid)
@@ -57,6 +61,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // PUT: api/Rating/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Update(int id, [FromBody] Rating rating)
         {
             if (id != rating.Id)
@@ -74,6 +79,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // DELETE: api/Rating/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var rating = await _context.Ratings.FindAsync(id);

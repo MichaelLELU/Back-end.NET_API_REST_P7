@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Domain;
 using P7CreateRestApi.Repositories;
@@ -18,6 +19,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // GET: api/Trade
         [HttpGet]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAll()
         {
             var trades = await _repository.GetAllAsync();
@@ -26,6 +28,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // GET: api/Trade/{id}
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetById(int id)
         {
             var trade = await _repository.GetByIdAsync(id);
@@ -37,6 +40,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // POST: api/Trade
         [HttpPost]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Create([FromBody] Trade trade)
         {
             if (!ModelState.IsValid)
@@ -51,6 +55,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // PUT: api/Trade/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Update(int id, [FromBody] Trade trade)
         {
             if (id != trade.Id)
@@ -66,6 +71,7 @@ namespace Dot.Net.WebApi.Controllers
 
         // DELETE: api/Trade/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _repository.DeleteAsync(id);

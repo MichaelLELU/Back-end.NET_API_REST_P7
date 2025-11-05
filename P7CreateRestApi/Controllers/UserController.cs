@@ -7,7 +7,7 @@ namespace P7CreateRestApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")] // seuls les Admins peuvent gérer les utilisateurs
+    [Authorize] // tout le monde doit être connecté
     public class UsersController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -25,7 +25,9 @@ namespace P7CreateRestApi.Controllers
         }
 
         // 🔹 GET: api/users
+        // ✅ Admin : liste tous les utilisateurs
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             var users = await _userManager.Users
@@ -37,16 +39,24 @@ namespace P7CreateRestApi.Controllers
                 })
                 .ToListAsync();
 
-            _logger.LogInformation("Admin {User} a listé {Count} utilisateurs",
+            _logger.LogInformation("Admin {Admin} a listé {Count} utilisateurs",
                 User.Identity?.Name, users.Count);
 
             return Ok(users);
         }
 
         // 🔹 GET: api/users/{id}
+        // ✅ Admin : peut voir n’importe qui
+        // ✅ User : peut voir uniquement son propre profil
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Vérifie si l’utilisateur est admin ou accède à son propre compte
+            if (!User.IsInRole("Admin") && currentUserId != id)
+                return Forbid();
+
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
                 return NotFound(new { message = $"Utilisateur {id} introuvable" });
@@ -55,7 +65,9 @@ namespace P7CreateRestApi.Controllers
         }
 
         // 🔹 POST: api/users
+        // ✅ Admin : crée un nouvel utilisateur (avec rôle)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] RegisterUserDto model)
         {
             if (!ModelState.IsValid)
@@ -80,14 +92,25 @@ namespace P7CreateRestApi.Controllers
                 await _userManager.AddToRoleAsync(user, model.Role);
             }
 
-            _logger.LogInformation("Utilisateur {UserName} créé par {Admin}", user.UserName, User.Identity?.Name);
-            return CreatedAtAction(nameof(GetById), new { id = user.Id }, new { user.Id, user.UserName, user.Email });
+            _logger.LogInformation("Admin {Admin} a créé l’utilisateur {UserName}",
+                User.Identity?.Name, user.UserName);
+
+            return CreatedAtAction(nameof(GetById), new { id = user.Id },
+                new { user.Id, user.UserName, user.Email });
         }
 
         // 🔹 PUT: api/users/{id}
+        // ✅ Admin : peut modifier n’importe qui
+        // ✅ User : peut modifier uniquement son propre compte
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateUserDto model)
         {
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Vérifie si l’utilisateur est admin ou édite son propre compte
+            if (!User.IsInRole("Admin") && currentUserId != id)
+                return Forbid();
+
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
                 return NotFound(new { message = $"Utilisateur {id} introuvable" });
@@ -99,12 +122,16 @@ namespace P7CreateRestApi.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            _logger.LogInformation("Utilisateur {Id} mis à jour par {Admin}", id, User.Identity?.Name);
+            _logger.LogInformation("Utilisateur {User} mis à jour par {Actor}",
+                user.UserName, User.Identity?.Name);
+
             return Ok(new { user.Id, user.UserName, user.Email });
         }
 
         // 🔹 DELETE: api/users/{id}
+        // ✅ Admin uniquement
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -115,12 +142,14 @@ namespace P7CreateRestApi.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            _logger.LogWarning("Utilisateur {Id} supprimé par {Admin}", id, User.Identity?.Name);
+            _logger.LogWarning("Admin {Admin} a supprimé l’utilisateur {UserId}",
+                User.Identity?.Name, id);
+
             return NoContent();
         }
     }
 
-    // 🔸 DTOs pour éviter d’exposer directement IdentityUser
+    // 🔸 DTOs
     public class RegisterUserDto
     {
         public string UserName { get; set; } = null!;
