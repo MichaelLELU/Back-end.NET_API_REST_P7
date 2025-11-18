@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -9,33 +10,38 @@ namespace P7CreateRestApi.Services
     public class JwtService
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public JwtService(IConfiguration configuration)
+        public JwtService(IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
         public string GenerateToken(IdentityUser user)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings.GetValue<string>("SecretKey");
+            var roles = _userManager.GetRolesAsync(user).Result;
 
-            var claims = new[]
+
+            var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Name, user.UserName ?? ""),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddMinutes(jwtSettings.GetValue<int>("ExpiryMinutes"));
 
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            // Clé secrète pour signer le token
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            // Création du token
             var token = new JwtSecurityToken(
-                issuer: jwtSettings.GetValue<string>("Issuer"),
-                audience: jwtSettings.GetValue<string>("Audience"),
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: expires,
+                expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds
             );
 

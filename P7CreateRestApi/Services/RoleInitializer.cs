@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using P7CreateRestApi.Constants;
 
 namespace P7CreateRestApi.Services
 {
@@ -9,21 +10,18 @@ namespace P7CreateRestApi.Services
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-            // Rôles de base
-            string[] roleNames = { "Admin", "User" };
-
-            foreach (var roleName in roleNames)
+            foreach (var roleName in AppRoles.AllowedRoles)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
                     await roleManager.CreateAsync(new IdentityRole(roleName));
             }
 
-            // Création de l'admin
             string adminEmail = "admin@findexium.com";
             string adminUserName = "admin";
             string adminPassword = "Admin123456789!";
 
             var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+
             if (existingAdmin == null)
             {
                 var adminUser = new IdentityUser
@@ -34,8 +32,9 @@ namespace P7CreateRestApi.Services
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
+
                 if (result.Succeeded)
-                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                    await userManager.AddToRoleAsync(adminUser, AppRoles.Admin);
             }
         }
     }

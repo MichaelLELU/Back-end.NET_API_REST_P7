@@ -11,21 +11,26 @@ namespace Dot.Net.WebApi.Controllers
     public class CurveController : ControllerBase
     {
         private readonly LocalDbContext _context;
+        private readonly ILogger<CurveController> _logger;
 
-        public CurveController(LocalDbContext context)
+        public CurveController(LocalDbContext context, ILogger<CurveController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
+        // --- LECTURE DE TOUTES LES COURBES ---
         // GET: api/Curve
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var curves = await _context.CurvePoints.ToListAsync();
+            _logger.LogInformation("Liste des courbes récupérée ({Count} entrées)", curves.Count);
             return Ok(curves);
         }
 
+        // --- LECTURE PAR ID ---
         // GET: api/Curve/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
@@ -33,11 +38,16 @@ namespace Dot.Net.WebApi.Controllers
         {
             var curve = await _context.CurvePoints.FindAsync(id);
             if (curve == null)
+            {
+                _logger.LogWarning("Aucune courbe trouvée avec l'id {Id}", id);
                 return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
+            }
 
+            _logger.LogInformation("Courbe {Id} consultée", id);
             return Ok(curve);
         }
 
+        // --- CRÉATION ---
         // POST: api/Curve
         [Authorize(Roles = "Admin,User")]
         [HttpPost]
@@ -47,14 +57,19 @@ namespace Dot.Net.WebApi.Controllers
                 return BadRequest(ModelState);
 
             if (curve.Term == null || curve.CurvePointValue == null)
+            {
+                _logger.LogWarning("Échec de création : champs manquants pour CurvePoint");
                 return BadRequest(new { message = "Les champs Term et CurvePointValue sont requis." });
+            }
 
             _context.CurvePoints.Add(curve);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Courbe {Id} créée par {User}", curve.Id, User.Identity?.Name);
             return CreatedAtAction(nameof(GetById), new { id = curve.Id }, curve);
         }
 
+        // --- MISE À JOUR ---
         // PUT: api/Curve/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
@@ -65,14 +80,19 @@ namespace Dot.Net.WebApi.Controllers
 
             var existingCurve = await _context.CurvePoints.FindAsync(id);
             if (existingCurve == null)
+            {
+                _logger.LogWarning("Échec de mise à jour : courbe {Id} introuvable", id);
                 return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
+            }
 
             _context.Entry(existingCurve).CurrentValues.SetValues(curve);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Courbe {Id} mise à jour par {User}", id, User.Identity?.Name);
             return Ok(existingCurve);
         }
 
+        // --- SUPPRESSION ---
         // DELETE: api/Curve/{id}
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
@@ -80,11 +100,15 @@ namespace Dot.Net.WebApi.Controllers
         {
             var curve = await _context.CurvePoints.FindAsync(id);
             if (curve == null)
+            {
+                _logger.LogWarning("Tentative de suppression d'une courbe inexistante (id {Id})", id);
                 return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
+            }
 
             _context.CurvePoints.Remove(curve);
             await _context.SaveChangesAsync();
 
+            _logger.LogWarning("Courbe {Id} supprimée par {User}", id, User.Identity?.Name);
             return NoContent();
         }
     }

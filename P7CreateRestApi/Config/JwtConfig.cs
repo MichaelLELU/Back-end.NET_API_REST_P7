@@ -8,8 +8,8 @@ namespace P7CreateRestApi.Config
     {
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings.GetValue<string>("SecretKey");
+            var jwtSection = configuration.GetSection("Jwt");
+            var secretKey = jwtSection.GetValue<string>("Key");
 
             services.AddAuthentication(options =>
             {
@@ -24,10 +24,28 @@ namespace P7CreateRestApi.Config
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.GetValue<string>("Issuer"),
-                    ValidAudience = jwtSettings.GetValue<string>("Audience"),
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                    ClockSkew = TimeSpan.Zero // pas de délai de grâce sur l’expiration
+                    ValidIssuer = jwtSection.GetValue<string>("Issuer"),
+                    ValidAudience = jwtSection.GetValue<string>("Audience"),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                };
+
+                // 🔍 Pour traquer les erreurs JWT
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"❌ JWT erreur : {context.Exception.Message}");
+                        Console.ResetColor();
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"✅ JWT valide pour {context.Principal.Identity?.Name}");
+                        Console.ResetColor();
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

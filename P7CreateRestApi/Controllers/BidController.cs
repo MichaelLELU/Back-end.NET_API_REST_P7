@@ -20,6 +20,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- LECTURE PUBLIQUE ---
+        // GET: api/Bid
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -30,6 +31,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- LECTURE PAR ID ---
+        // GET: api/Bid/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -46,6 +48,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- CRÉATION ---
+        // POST: api/Bid
         [Authorize(Roles = "Admin,User")] 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Bid bid)
@@ -64,6 +67,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- MISE À JOUR ---
+        // PUT: api/Bid/{id}
         [Authorize(Roles = "Admin,User")] 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Bid bid)
@@ -83,6 +87,7 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // --- SUPPRESSION ---
+        // DELETE: api/Bid/{id}
         [Authorize(Roles = "Admin")] 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
