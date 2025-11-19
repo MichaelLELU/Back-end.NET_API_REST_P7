@@ -19,7 +19,6 @@ namespace Dot.Net.WebApi.Controllers
             _logger = logger;
         }
 
-        // --- LECTURE DE TOUS LES RATINGS ---
         // GET: api/Rating
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
@@ -30,7 +29,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(ratings);
         }
 
-        // --- LECTURE PAR ID ---
         // GET: api/Rating/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
@@ -47,7 +45,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(rating);
         }
 
-        // --- CRÉATION ---
         // POST: api/Rating
         [Authorize(Roles = "Admin,User")]
         [HttpPost]
@@ -71,7 +68,6 @@ namespace Dot.Net.WebApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = rating.Id }, rating);
         }
 
-        // --- MISE À JOUR ---
         // PUT: api/Rating/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
@@ -94,7 +90,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(existingRating);
         }
 
-        // --- SUPPRESSION ---
         // DELETE: api/Rating/{id}
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]

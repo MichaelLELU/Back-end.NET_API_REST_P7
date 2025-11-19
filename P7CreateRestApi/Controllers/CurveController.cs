@@ -19,7 +19,6 @@ namespace Dot.Net.WebApi.Controllers
             _logger = logger;
         }
 
-        // --- LECTURE DE TOUTES LES COURBES ---
         // GET: api/Curve
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
@@ -30,7 +29,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(curves);
         }
 
-        // --- LECTURE PAR ID ---
         // GET: api/Curve/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
@@ -47,7 +45,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(curve);
         }
 
-        // --- CRÉATION ---
         // POST: api/Curve
         [Authorize(Roles = "Admin,User")]
         [HttpPost]
@@ -69,7 +66,6 @@ namespace Dot.Net.WebApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = curve.Id }, curve);
         }
 
-        // --- MISE À JOUR ---
         // PUT: api/Curve/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
@@ -92,7 +88,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(existingCurve);
         }
 
-        // --- SUPPRESSION ---
         // DELETE: api/Curve/{id}
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]

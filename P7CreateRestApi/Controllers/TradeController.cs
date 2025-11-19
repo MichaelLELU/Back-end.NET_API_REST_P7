@@ -19,7 +19,6 @@ namespace Dot.Net.WebApi.Controllers
             _logger = logger;
         }
 
-        // --- LECTURE DE TOUTES LES TRANSACTIONS ---
         // GET: api/Trade
         [HttpGet]
         [Authorize(Roles = "Admin,User")]
@@ -30,7 +29,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(trades);
         }
 
-        // --- LECTURE PAR ID ---
         // GET: api/Trade/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,User")]
@@ -47,7 +45,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(trade);
         }
 
-        // --- CRÉATION ---
         // POST: api/Trade
         [HttpPost]
         [Authorize(Roles = "Admin,User")]
@@ -68,7 +65,6 @@ namespace Dot.Net.WebApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdTrade.Id }, createdTrade);
         }
 
-        // --- MISE À JOUR ---
         // PUT: api/Trade/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,User")]
@@ -90,7 +86,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(trade);
         }
 
-        // --- SUPPRESSION ---
         // DELETE: api/Trade/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]

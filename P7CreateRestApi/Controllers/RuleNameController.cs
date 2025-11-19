@@ -19,7 +19,6 @@ namespace Dot.Net.WebApi.Controllers
             _logger = logger;
         }
 
-        // --- LECTURE DE TOUTES LES RÈGLES ---
         // GET: api/RuleName
         [HttpGet]
         [Authorize(Roles = "Admin,User")]
@@ -30,7 +29,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(rules);
         }
 
-        // --- LECTURE PAR ID ---
         // GET: api/RuleName/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,User")]
@@ -47,7 +45,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(rule);
         }
 
-        // --- CRÉATION ---
         // POST: api/RuleName
         [HttpPost]
         [Authorize(Roles = "Admin,User")]
@@ -67,7 +64,6 @@ namespace Dot.Net.WebApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdRule.Id }, createdRule);
         }
 
-        // --- MISE À JOUR ---
         // PUT: api/RuleName/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,User")]
@@ -88,7 +84,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(rule);
         }
 
-        // --- SUPPRESSION ---
         // DELETE: api/RuleName/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]

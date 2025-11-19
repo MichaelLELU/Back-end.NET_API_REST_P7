@@ -19,7 +19,6 @@ namespace Dot.Net.WebApi.Controllers
             _logger = logger;
         }
 
-        // --- LECTURE PUBLIQUE ---
         // GET: api/Bid
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
@@ -30,7 +29,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(bids);
         }
 
-        // --- LECTURE PAR ID ---
         // GET: api/Bid/{id}
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
@@ -47,7 +45,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(bid);
         }
 
-        // --- CRÉATION ---
         // POST: api/Bid
         [Authorize(Roles = "Admin,User")] 
         [HttpPost]
@@ -66,7 +63,6 @@ namespace Dot.Net.WebApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = bid.Id }, bid);
         }
 
-        // --- MISE À JOUR ---
         // PUT: api/Bid/{id}
         [Authorize(Roles = "Admin,User")] 
         [HttpPut("{id}")]
@@ -86,7 +82,6 @@ namespace Dot.Net.WebApi.Controllers
             return Ok(existingBid);
         }
 
-        // --- SUPPRESSION ---
         // DELETE: api/Bid/{id}
         [Authorize(Roles = "Admin")] 
         [HttpDelete("{id}")]
