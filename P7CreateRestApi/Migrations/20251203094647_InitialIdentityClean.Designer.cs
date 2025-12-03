@@ -12,8 +12,8 @@ using P7CreateRestApi.Data;
 namespace P7CreateRestApi.Migrations
 {
     [DbContext(typeof(LocalDbContext))]
-    [Migration("20251029131438_v1")]
-    partial class v1
+    [Migration("20251203094647_InitialIdentityClean")]
+    partial class InitialIdentityClean
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

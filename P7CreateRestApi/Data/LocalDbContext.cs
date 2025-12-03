@@ -5,7 +5,7 @@ using P7CreateRestApi.Domain;
 
 namespace P7CreateRestApi.Data
 {
-    public class LocalDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
+    public class LocalDbContext : IdentityDbContext<AppUser, IdentityRole, string>
 
     {
         public LocalDbContext(DbContextOptions<LocalDbContext> options)
@@ -22,6 +22,10 @@ namespace P7CreateRestApi.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<AppUser>()
+                .HasIndex(u => u.NormalizedUserName)
+                .IsUnique(false);
         }
     }
 }

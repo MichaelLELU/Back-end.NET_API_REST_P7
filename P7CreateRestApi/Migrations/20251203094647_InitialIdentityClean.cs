@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace P7CreateRestApi.Migrations
 {
-    public partial class v1 : Migration
+    public partial class InitialIdentityClean : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

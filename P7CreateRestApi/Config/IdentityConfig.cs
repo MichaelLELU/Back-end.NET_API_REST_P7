@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using P7CreateRestApi.Data;
+using P7CreateRestApi.Domain;
 
 
 namespace P7CreateRestApi.Config
@@ -9,7 +9,7 @@ namespace P7CreateRestApi.Config
 {
     public static IServiceCollection AddAppIdentity(this IServiceCollection services)
     {
-        services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        services.AddIdentity<AppUser, IdentityRole>(options =>
         {
                 // --- Paramètres utilisateur ---
                 options.User.RequireUniqueEmail = true;

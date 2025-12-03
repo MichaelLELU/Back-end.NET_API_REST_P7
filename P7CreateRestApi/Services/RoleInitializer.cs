@@ -1,41 +1,38 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using P7CreateRestApi.Constants;
+using P7CreateRestApi.Domain;
 
-namespace P7CreateRestApi.Services
+public static class RoleInitializer
 {
-    public static class RoleInitializer
+    public static async Task SeedRolesAndAdminAsync(IServiceProvider services)
     {
-        public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<AppUser>>();
+
+        if (!await roleManager.RoleExistsAsync("Admin"))
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+        if (!await roleManager.RoleExistsAsync("User"))
+            await roleManager.CreateAsync(new IdentityRole("User"));
+
+        string email = "admin@findexium.com";
+        string password = "Admin123456789!";
+
+        var admin = await userManager.FindByEmailAsync(email);
+
+        if (admin == null)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
-            foreach (var roleName in AppRoles.AllowedRoles)
+            admin = new AppUser
             {
-                if (!await roleManager.RoleExistsAsync(roleName))
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
-            }
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true,
+                FullName = "Administrator"
+            };
 
-            string adminEmail = "admin@findexium.com";
-            string adminUserName = "admin";
-            string adminPassword = "Admin123456789!";
+            var result = await userManager.CreateAsync(admin, password);
 
-            var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
-
-            if (existingAdmin == null)
-            {
-                var adminUser = new IdentityUser
-                {
-                    UserName = adminUserName,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
-
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
-
-                if (result.Succeeded)
-                    await userManager.AddToRoleAsync(adminUser, AppRoles.Admin);
-            }
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(admin, "Admin");
         }
     }
 }
