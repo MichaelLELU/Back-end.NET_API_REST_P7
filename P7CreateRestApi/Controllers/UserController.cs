@@ -3,22 +3,23 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Constants;
+using P7CreateRestApi.Domain;
 
 namespace P7CreateRestApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class UsersController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ILogger<UsersController> _logger;
+        private readonly ILogger<UserController> _logger;
 
-        public UsersController(
-            UserManager<IdentityUser> userManager,
+        public UserController(
+            UserManager<AppUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            ILogger<UsersController> logger)
+            ILogger<UserController> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -31,7 +32,7 @@ namespace P7CreateRestApi.Controllers
         public async Task<IActionResult> GetAll()
         {
             var users = await _userManager.Users
-                .Select(u => new { u.Id, u.Email })
+                .Select(u => new { u.Id, u.Email, u.UserName })
                 .ToListAsync();
 
             _logger.LogInformation("Admin {Admin} a listé {Count} utilisateurs", User.Identity?.Name, users.Count);
@@ -66,10 +67,10 @@ namespace P7CreateRestApi.Controllers
             if (string.IsNullOrEmpty(model.Role) || !AppRoles.AllowedRoles.Contains(model.Role))
                 return BadRequest(new { message = $"Rôle '{model.Role}' non autorisé." });
 
-            var user = new IdentityUser
+            var user = new AppUser
             {
                 Email = model.Email,
-                UserName = model.Email
+                UserName = model.UserName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -99,7 +100,7 @@ namespace P7CreateRestApi.Controllers
             if (model.Email != null)
             {
                 user.Email = model.Email;
-                user.UserName = model.Email; 
+                user.UserName = model.UserName; 
             }
 
             var result = await _userManager.UpdateAsync(user);
@@ -135,13 +136,17 @@ namespace P7CreateRestApi.Controllers
     public class RegisterUserDto
     {
         public string Email { get; set; } = null!;
+        public string UserName { get; set; } = null!;
         public string Password { get; set; } = null!;
         public string? Role { get; set; }
     }
 
+
     public class UpdateUserDto
     {
         public string? Email { get; set; }
+        public string? UserName { get; set; }
     }
+
 }
 

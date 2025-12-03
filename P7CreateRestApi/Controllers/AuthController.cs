@@ -12,14 +12,18 @@ namespace P7CreateRestApi.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly JwtService _jwtService;
         private readonly ILogger<AuthController> _logger;
+        private readonly SignInManager<AppUser> _signInManager;
+
 
         public AuthController(
             UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager,
             JwtService jwtService,
             ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _jwtService = jwtService;
+            _signInManager = signInManager;
             _logger = logger;
         }
 
@@ -70,5 +74,19 @@ namespace P7CreateRestApi.Controllers
 
             return Ok(new { token });
         }
-    }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+
+            await _signInManager.SignOutAsync();
+
+            _logger.LogInformation("Déconnexion effectuée à {Time} depuis IP: {IP}",
+                DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                HttpContext.Connection.RemoteIpAddress);
+
+            return Ok(new { message = "Déconnexion réussie." });
+        }
+    
+}
 }
