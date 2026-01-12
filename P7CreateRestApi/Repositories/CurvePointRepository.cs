@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Data;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Repositories.Interfaces;
 
 namespace P7CreateRestApi.Repositories
 {
-    public class CurvePointRepository
+    public class CurvePointRepository : ICurvePointRepository
     {
         private readonly LocalDbContext _context;
 
@@ -17,35 +16,37 @@ namespace P7CreateRestApi.Repositories
 
         public async Task<IEnumerable<CurvePoint>> GetAllAsync()
         {
-            return await _context.CurvePoints.ToListAsync();
+            return await _context.CurvePoints
+                                 .AsNoTracking()
+                                 .ToListAsync();
         }
 
-        public async Task<CurvePoint> GetByIdAsync(int id)
+        public async Task<CurvePoint?> GetByIdAsync(int id)
         {
-            return await _context.CurvePoints.FindAsync(id);
+            return await _context.CurvePoints
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<CurvePoint> AddAsync(CurvePoint curve)
+        public async Task AddAsync(CurvePoint curvePoint)
         {
-            _context.CurvePoints.Add(curve);
+            _context.CurvePoints.Add(curvePoint);
             await _context.SaveChangesAsync();
-            return curve;
         }
 
-        public async Task<CurvePoint> UpdateAsync(CurvePoint curve)
+        public async Task UpdateAsync(CurvePoint curvePoint)
         {
-            _context.Entry(curve).State = EntityState.Modified;
+            _context.CurvePoints.Update(curvePoint);
             await _context.SaveChangesAsync();
-            return curve;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var curve = await _context.CurvePoints.FindAsync(id);
-            if (curve == null)
+            var curvePoint = await _context.CurvePoints.FindAsync(id);
+            if (curvePoint is null)
                 return false;
 
-            _context.CurvePoints.Remove(curve);
+            _context.CurvePoints.Remove(curvePoint);
             await _context.SaveChangesAsync();
             return true;
         }

@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using P7CreateRestApi.Domain.Common;
 
 namespace P7CreateRestApi.Domain
 {
-    public class Trade
+    public class Trade : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
         public string? Account { get; set; }
         public string? AccountType { get; set; }
         public double? BuyQuantity { get; set; }

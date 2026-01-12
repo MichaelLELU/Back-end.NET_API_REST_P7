@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Data;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Repositories.Interfaces;
 
 namespace P7CreateRestApi.Repositories
 {
-    public class RatingRepository
+    public class RatingRepository : IRatingRepository
     {
         private readonly LocalDbContext _context;
 
@@ -15,39 +14,36 @@ namespace P7CreateRestApi.Repositories
             _context = context;
         }
 
-        // 🔹 Récupérer tous les Ratings
         public async Task<IEnumerable<Rating>> GetAllAsync()
         {
-            return await _context.Ratings.ToListAsync();
+            return await _context.Ratings
+                                 .AsNoTracking()
+                                 .ToListAsync();
         }
 
-        // 🔹 Récupérer un Rating par ID
-        public async Task<Rating> GetByIdAsync(int id)
+        public async Task<Rating?> GetByIdAsync(int id)
         {
-            return await _context.Ratings.FindAsync(id);
+            return await _context.Ratings
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        // 🔹 Ajouter un nouveau Rating
-        public async Task<Rating> AddAsync(Rating rating)
+        public async Task AddAsync(Rating rating)
         {
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
-            return rating;
         }
 
-        // 🔹 Mettre à jour un Rating existant
-        public async Task<Rating> UpdateAsync(Rating rating)
+        public async Task UpdateAsync(Rating rating)
         {
-            _context.Entry(rating).State = EntityState.Modified;
+            _context.Ratings.Update(rating);
             await _context.SaveChangesAsync();
-            return rating;
         }
 
-        // 🔹 Supprimer un Rating
         public async Task<bool> DeleteAsync(int id)
         {
             var rating = await _context.Ratings.FindAsync(id);
-            if (rating == null)
+            if (rating is null)
                 return false;
 
             _context.Ratings.Remove(rating);
@@ -55,7 +51,6 @@ namespace P7CreateRestApi.Repositories
             return true;
         }
 
-        // 🔹 Vérifier si un Rating existe
         public async Task<bool> ExistsAsync(int id)
         {
             return await _context.Ratings.AnyAsync(r => r.Id == id);

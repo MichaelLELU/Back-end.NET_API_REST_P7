@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using P7CreateRestApi.Data;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Repositories.Interfaces;
 
 namespace Dot.Net.WebApi.Controllers
 {
@@ -10,12 +9,14 @@ namespace Dot.Net.WebApi.Controllers
     [Route("api/[controller]")]
     public class CurveController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+        private readonly ICurvePointRepository _curveRepository;
         private readonly ILogger<CurveController> _logger;
 
-        public CurveController(LocalDbContext context, ILogger<CurveController> logger)
+        public CurveController(
+            ICurvePointRepository curveRepository,
+            ILogger<CurveController> logger)
         {
-            _context = context;
+            _curveRepository = curveRepository;
             _logger = logger;
         }
 
@@ -24,8 +25,8 @@ namespace Dot.Net.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var curves = await _context.CurvePoints.ToListAsync();
-            _logger.LogInformation("Liste des courbes récupérée ({Count} entrées)", curves.Count);
+            var curves = await _curveRepository.GetAllAsync();
+            _logger.LogInformation("Liste des courbes récupérée");
             return Ok(curves);
         }
 
@@ -34,8 +35,8 @@ namespace Dot.Net.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var curve = await _context.CurvePoints.FindAsync(id);
-            if (curve == null)
+            var curve = await _curveRepository.GetByIdAsync(id);
+            if (curve is null)
             {
                 _logger.LogWarning("Aucune courbe trouvée avec l'id {Id}", id);
                 return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
@@ -53,14 +54,16 @@ namespace Dot.Net.WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (curve.Term == null || curve.CurvePointValue == null)
+            if (curve.Term is null || curve.CurvePointValue is null)
             {
                 _logger.LogWarning("Échec de création : champs manquants pour CurvePoint");
-                return BadRequest(new { message = "Les champs Term et CurvePointValue sont requis." });
+                return BadRequest(new
+                {
+                    message = "Les champs Term et CurvePointValue sont requis."
+                });
             }
 
-            _context.CurvePoints.Add(curve);
-            await _context.SaveChangesAsync();
+            await _curveRepository.AddAsync(curve);
 
             _logger.LogInformation("Courbe {Id} créée par {User}", curve.Id, User.Identity?.Name);
             return CreatedAtAction(nameof(GetById), new { id = curve.Id }, curve);
@@ -74,18 +77,17 @@ namespace Dot.Net.WebApi.Controllers
             if (id != curve.Id)
                 return BadRequest(new { message = "L'identifiant ne correspond pas." });
 
-            var existingCurve = await _context.CurvePoints.FindAsync(id);
-            if (existingCurve == null)
+            var existingCurve = await _curveRepository.GetByIdAsync(id);
+            if (existingCurve is null)
             {
                 _logger.LogWarning("Échec de mise à jour : courbe {Id} introuvable", id);
                 return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
             }
 
-            _context.Entry(existingCurve).CurrentValues.SetValues(curve);
-            await _context.SaveChangesAsync();
+            await _curveRepository.UpdateAsync(curve);
 
             _logger.LogInformation("Courbe {Id} mise à jour par {User}", id, User.Identity?.Name);
-            return Ok(existingCurve);
+            return Ok(curve);
         }
 
         // DELETE: api/Curve/{id}
@@ -93,15 +95,14 @@ namespace Dot.Net.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var curve = await _context.CurvePoints.FindAsync(id);
-            if (curve == null)
+            var deleted = await _curveRepository.DeleteAsync(id);
+            if (!deleted)
             {
-                _logger.LogWarning("Tentative de suppression d'une courbe inexistante (id {Id})", id);
+                _logger.LogWarning(
+                    "Tentative de suppression d'une courbe inexistante (id {Id})",
+                    id);
                 return NotFound(new { message = $"Aucune courbe trouvée avec l'id {id}" });
             }
-
-            _context.CurvePoints.Remove(curve);
-            await _context.SaveChangesAsync();
 
             _logger.LogWarning("Courbe {Id} supprimée par {User}", id, User.Identity?.Name);
             return NoContent();

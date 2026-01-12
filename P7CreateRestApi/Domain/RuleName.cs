@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using P7CreateRestApi.Domain.Common;
 
 namespace P7CreateRestApi.Domain
 {
-    public class RuleName
+    public class RuleName : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Json { get; set; }

@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Domain;
-using P7CreateRestApi.Repositories;
-using System.Threading.Tasks;
+using P7CreateRestApi.Repositories.Interfaces;
 
 namespace Dot.Net.WebApi.Controllers
 {
@@ -10,12 +9,14 @@ namespace Dot.Net.WebApi.Controllers
     [Route("api/[controller]")]
     public class RuleNameController : ControllerBase
     {
-        private readonly RuleNameRepository _repository;
+        private readonly IRuleNameRepository _ruleNameRepository;
         private readonly ILogger<RuleNameController> _logger;
 
-        public RuleNameController(RuleNameRepository repository, ILogger<RuleNameController> logger)
+        public RuleNameController(
+            IRuleNameRepository ruleNameRepository,
+            ILogger<RuleNameController> logger)
         {
-            _repository = repository;
+            _ruleNameRepository = ruleNameRepository;
             _logger = logger;
         }
 
@@ -24,8 +25,8 @@ namespace Dot.Net.WebApi.Controllers
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAll()
         {
-            var rules = await _repository.GetAllAsync();
-            _logger.LogInformation("Liste des règles récupérée ({Count} entrées)", rules.Count());
+            var rules = await _ruleNameRepository.GetAllAsync();
+            _logger.LogInformation("Liste des règles récupérée");
             return Ok(rules);
         }
 
@@ -34,8 +35,8 @@ namespace Dot.Net.WebApi.Controllers
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetById(int id)
         {
-            var rule = await _repository.GetByIdAsync(id);
-            if (rule == null)
+            var rule = await _ruleNameRepository.GetByIdAsync(id);
+            if (rule is null)
             {
                 _logger.LogWarning("Aucune règle trouvée avec l'id {Id}", id);
                 return NotFound(new { message = $"Aucune règle trouvée avec l'id {id}" });
@@ -59,9 +60,14 @@ namespace Dot.Net.WebApi.Controllers
                 return BadRequest(new { message = "Le champ Name est requis." });
             }
 
-            var createdRule = await _repository.AddAsync(rule);
-            _logger.LogInformation("Règle {Id} créée par {User}", createdRule.Id, User.Identity?.Name);
-            return CreatedAtAction(nameof(GetById), new { id = createdRule.Id }, createdRule);
+            await _ruleNameRepository.AddAsync(rule);
+
+            _logger.LogInformation(
+                "Règle {Id} créée par {User}",
+                rule.Id,
+                User.Identity?.Name);
+
+            return CreatedAtAction(nameof(GetById), new { id = rule.Id }, rule);
         }
 
         // PUT: api/RuleName/{id}
@@ -72,14 +78,14 @@ namespace Dot.Net.WebApi.Controllers
             if (id != rule.Id)
                 return BadRequest(new { message = "L'identifiant ne correspond pas." });
 
-            var existingRule = await _repository.GetByIdAsync(id);
-            if (existingRule == null)
+            if (!await _ruleNameRepository.ExistsAsync(id))
             {
                 _logger.LogWarning("Échec de mise à jour : règle {Id} introuvable", id);
                 return NotFound(new { message = $"Aucune règle trouvée avec l'id {id}" });
             }
 
-            await _repository.UpdateAsync(rule);
+            await _ruleNameRepository.UpdateAsync(rule);
+
             _logger.LogInformation("Règle {Id} mise à jour par {User}", id, User.Identity?.Name);
             return Ok(rule);
         }
@@ -89,7 +95,7 @@ namespace Dot.Net.WebApi.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _repository.DeleteAsync(id);
+            var deleted = await _ruleNameRepository.DeleteAsync(id);
             if (!deleted)
             {
                 _logger.LogWarning("Tentative de suppression d’une règle inexistante ({Id})", id);

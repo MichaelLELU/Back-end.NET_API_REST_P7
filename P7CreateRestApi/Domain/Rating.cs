@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using P7CreateRestApi.Domain.Common;
 
 namespace P7CreateRestApi.Domain
 {
-    public class Rating
+    public class Rating : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
         public string MoodysRating { get; set; }
         public string SandPRating { get; set; }
         public string FitchRating { get; set; }

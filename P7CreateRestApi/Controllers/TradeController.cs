@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Domain;
-using P7CreateRestApi.Repositories;
-using System.Threading.Tasks;
+using P7CreateRestApi.Repositories.Interfaces;
 
 namespace Dot.Net.WebApi.Controllers
 {
@@ -10,12 +9,14 @@ namespace Dot.Net.WebApi.Controllers
     [Route("api/[controller]")]
     public class TradeController : ControllerBase
     {
-        private readonly TradeRepository _repository;
+        private readonly ITradeRepository _tradeRepository;
         private readonly ILogger<TradeController> _logger;
 
-        public TradeController(TradeRepository repository, ILogger<TradeController> logger)
+        public TradeController(
+            ITradeRepository tradeRepository,
+            ILogger<TradeController> logger)
         {
-            _repository = repository;
+            _tradeRepository = tradeRepository;
             _logger = logger;
         }
 
@@ -24,8 +25,8 @@ namespace Dot.Net.WebApi.Controllers
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAll()
         {
-            var trades = await _repository.GetAllAsync();
-            _logger.LogInformation("Liste des transactions récupérée ({Count} entrées)", trades.Count());
+            var trades = await _tradeRepository.GetAllAsync();
+            _logger.LogInformation("Liste des transactions récupérée");
             return Ok(trades);
         }
 
@@ -34,8 +35,8 @@ namespace Dot.Net.WebApi.Controllers
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetById(int id)
         {
-            var trade = await _repository.GetByIdAsync(id);
-            if (trade == null)
+            var trade = await _tradeRepository.GetByIdAsync(id);
+            if (trade is null)
             {
                 _logger.LogWarning("Aucune transaction trouvée avec l'id {Id}", id);
                 return NotFound(new { message = $"Aucune transaction trouvée avec l'id {id}" });
@@ -53,16 +54,23 @@ namespace Dot.Net.WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (trade.BuyQuantity == null && trade.SellQuantity == null)
+            if (trade.BuyQuantity is null && trade.SellQuantity is null)
             {
                 _logger.LogWarning("Échec de création : quantités manquantes pour la transaction");
-                return BadRequest(new { message = "BuyQuantity ou SellQuantity doit être renseigné." });
+                return BadRequest(new
+                {
+                    message = "BuyQuantity ou SellQuantity doit être renseigné."
+                });
             }
 
-            var createdTrade = await _repository.AddAsync(trade);
+            await _tradeRepository.AddAsync(trade);
 
-            _logger.LogInformation("Transaction {Id} créée par {User}", createdTrade.Id, User.Identity?.Name);
-            return CreatedAtAction(nameof(GetById), new { id = createdTrade.Id }, createdTrade);
+            _logger.LogInformation(
+                "Transaction {Id} créée par {User}",
+                trade.Id,
+                User.Identity?.Name);
+
+            return CreatedAtAction(nameof(GetById), new { id = trade.Id }, trade);
         }
 
         // PUT: api/Trade/{id}
@@ -73,14 +81,13 @@ namespace Dot.Net.WebApi.Controllers
             if (id != trade.Id)
                 return BadRequest(new { message = "L'identifiant ne correspond pas." });
 
-            var existingTrade = await _repository.GetByIdAsync(id);
-            if (existingTrade == null)
+            if (!await _tradeRepository.ExistsAsync(id))
             {
                 _logger.LogWarning("Échec de mise à jour : transaction {Id} introuvable", id);
                 return NotFound(new { message = $"Aucune transaction trouvée avec l'id {id}" });
             }
 
-            await _repository.UpdateAsync(trade);
+            await _tradeRepository.UpdateAsync(trade);
 
             _logger.LogInformation("Transaction {Id} mise à jour par {User}", id, User.Identity?.Name);
             return Ok(trade);
@@ -91,7 +98,7 @@ namespace Dot.Net.WebApi.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _repository.DeleteAsync(id);
+            var deleted = await _tradeRepository.DeleteAsync(id);
             if (!deleted)
             {
                 _logger.LogWarning("Tentative de suppression d’une transaction inexistante ({Id})", id);

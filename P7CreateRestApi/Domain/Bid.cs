@@ -1,18 +1,14 @@
-using System.ComponentModel.DataAnnotations;
+using P7CreateRestApi.Domain.Common;
 
 namespace P7CreateRestApi.Domain
-
-
 {
-    public class Bid
+    public class Bid : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
         public string? Account { get; set; }
         public string BidType { get; set; }
         public double? BidQuantity { get; set; }
         public double? AskQuantity { get; set; }
-        public double? BidValue { get; set; }  
+        public double? BidValue { get; set; }
         public double? Ask { get; set; }
         public string Benchmark { get; set; }
         public DateTime? BidListDate { get; set; }
@@ -29,6 +25,5 @@ namespace P7CreateRestApi.Domain
         public string? DealType { get; set; }
         public string SourceListId { get; set; }
         public string? Side { get; set; }
-
     }
 }

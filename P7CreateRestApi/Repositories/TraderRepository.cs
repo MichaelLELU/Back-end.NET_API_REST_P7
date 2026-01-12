@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Data;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Repositories.Interfaces;
 
 namespace P7CreateRestApi.Repositories
 {
-    public class TradeRepository
+    public class TradeRepository : ITradeRepository
     {
         private readonly LocalDbContext _context;
 
@@ -15,39 +14,36 @@ namespace P7CreateRestApi.Repositories
             _context = context;
         }
 
-        // 🔹 Récupérer tous les Trades
         public async Task<IEnumerable<Trade>> GetAllAsync()
         {
-            return await _context.Trades.ToListAsync();
+            return await _context.Trades
+                                 .AsNoTracking()
+                                 .ToListAsync();
         }
 
-        // 🔹 Récupérer un Trade par ID
-        public async Task<Trade> GetByIdAsync(int id)
+        public async Task<Trade?> GetByIdAsync(int id)
         {
-            return await _context.Trades.FindAsync(id);
+            return await _context.Trades
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
-        // 🔹 Ajouter un nouveau Trade
-        public async Task<Trade> AddAsync(Trade trade)
+        public async Task AddAsync(Trade trade)
         {
             _context.Trades.Add(trade);
             await _context.SaveChangesAsync();
-            return trade;
         }
 
-        // 🔹 Mettre à jour un Trade existant
-        public async Task<Trade> UpdateAsync(Trade trade)
+        public async Task UpdateAsync(Trade trade)
         {
-            _context.Entry(trade).State = EntityState.Modified;
+            _context.Trades.Update(trade);
             await _context.SaveChangesAsync();
-            return trade;
         }
 
-        // 🔹 Supprimer un Trade
         public async Task<bool> DeleteAsync(int id)
         {
             var trade = await _context.Trades.FindAsync(id);
-            if (trade == null)
+            if (trade is null)
                 return false;
 
             _context.Trades.Remove(trade);
@@ -55,7 +51,6 @@ namespace P7CreateRestApi.Repositories
             return true;
         }
 
-        // 🔹 Vérifier si un Trade existe
         public async Task<bool> ExistsAsync(int id)
         {
             return await _context.Trades.AnyAsync(t => t.Id == id);
