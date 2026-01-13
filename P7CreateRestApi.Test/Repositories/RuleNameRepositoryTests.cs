@@ -1,7 +1,4 @@
-﻿using Xunit;
-using System.Linq;
-using System.Threading.Tasks;
-using P7CreateRestApi.Tests.Helpers;
+﻿using P7CreateRestApi.Tests.Helpers;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Domain;
 
@@ -27,9 +24,9 @@ namespace P7CreateRestApi.Tests.Repositories
             var repo = new RuleNameRepository(ctx);
 
             var rule = CreateValidRule();
-            var added = await repo.AddAsync(rule);
+            await repo.AddAsync(rule);
 
-            Assert.Equal(1, added.Id);
+            Assert.Equal(1, rule.Id);
             Assert.Single(ctx.RuleNames);
         }
 

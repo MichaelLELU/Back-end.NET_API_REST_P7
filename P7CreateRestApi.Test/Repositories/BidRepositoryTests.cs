@@ -1,7 +1,6 @@
 ﻿using P7CreateRestApi.Tests.Helpers;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Domain;
-using Xunit;
 
 namespace P7CreateRestApi.Tests.Repositories
 {
@@ -30,9 +29,9 @@ namespace P7CreateRestApi.Tests.Repositories
             var repo = new BidRepository(context);
 
             var bid = CreateValidBid();
-            var added = await repo.AddAsync(bid);
+            await repo.AddAsync(bid);
 
-            Assert.Equal(1, added.Id);
+            Assert.Equal(1, bid.Id);
             Assert.Single(context.Bids);
         }
 

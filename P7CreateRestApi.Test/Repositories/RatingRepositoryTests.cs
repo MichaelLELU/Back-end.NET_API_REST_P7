@@ -1,7 +1,4 @@
-﻿using Xunit;
-using System.Linq;
-using System.Threading.Tasks;
-using P7CreateRestApi.Tests.Helpers;
+﻿using P7CreateRestApi.Tests.Helpers;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Domain;
 
@@ -24,9 +21,9 @@ namespace P7CreateRestApi.Tests.Repositories
             var repo = new RatingRepository(ctx);
 
             var rating = CreateValidRating();
-            var added = await repo.AddAsync(rating);
+            await repo.AddAsync(rating);
 
-            Assert.Equal(1, added.Id);
+            Assert.Equal(1, rating.Id);
             Assert.Single(ctx.Ratings);
         }
 
