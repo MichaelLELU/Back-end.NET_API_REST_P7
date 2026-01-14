@@ -1,11 +1,12 @@
-﻿using Xunit;
-using Moq;
+﻿using Dot.Net.WebApi.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Dot.Net.WebApi.Controllers;
+using Moq;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Dto.Bid;
 using P7CreateRestApi.Repositories.Interfaces;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace P7CreateRestApi.Test.Controllers
 {
@@ -63,10 +64,15 @@ namespace P7CreateRestApi.Test.Controllers
             // Arrange
             _controller.ModelState.AddModelError("Account", "Required");
 
-            var bid = new Bid();
+            var dto = new CreateBidDto
+            {
+                Account = "",       // invalide
+                BidType = "Type",
+                BidQuantity = 10
+            };
 
             // Act
-            var result = await _controller.Create(bid);
+            var result = await _controller.Create(dto);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);

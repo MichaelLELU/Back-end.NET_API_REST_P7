@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Constants;
 using P7CreateRestApi.Domain;
-using P7CreateRestApi.Dto;
+using P7CreateRestApi.Dto.User;
 
 namespace P7CreateRestApi.Controllers
 {

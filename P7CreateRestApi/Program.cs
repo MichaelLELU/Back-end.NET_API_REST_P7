@@ -3,6 +3,8 @@ using P7CreateRestApi.Config;
 using P7CreateRestApi.Data;
 using P7CreateRestApi.Middlewares;
 using P7CreateRestApi.Services;
+using P7CreateRestApi.Repositories;
+using P7CreateRestApi.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +17,18 @@ builder.Logging.AddDebug();
 builder.Services.AddDbContext<LocalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// --- Repositories --- possibilité de cree une extantion afin d'ingecter les repository en une seule ligne
+builder.Services.AddScoped<IBidRepository, BidRepository>();
+builder.Services.AddScoped<ICurvePointRepository, CurvePointRepository>();
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<IRuleNameRepository, RuleNameRepository>();
+builder.Services.AddScoped<ITradeRepository, TradeRepository>();
+
 // --- Identity & JWT ---
 builder.Services.AddAppIdentity();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddScoped<JwtService>();
+
 
 // --- Swagger / MVC ---
 builder.Services.AddControllers();

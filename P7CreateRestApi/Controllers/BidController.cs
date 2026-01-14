@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Dto.Bid;
+using P7CreateRestApi.Dto.Common;
 using P7CreateRestApi.Repositories.Interfaces;
 
 namespace Dot.Net.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,User")]
     public class BidController : ControllerBase
     {
         private readonly IBidRepository _bidRepository;
@@ -21,78 +24,99 @@ namespace Dot.Net.WebApi.Controllers
         }
 
         // GET: api/Bid
-        [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var bids = await _bidRepository.GetAllAsync();
-            _logger.LogInformation("Récupération de tous les Bids");
             return Ok(bids);
         }
 
         // GET: api/Bid/{id}
-        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var bid = await _bidRepository.GetByIdAsync(id);
             if (bid is null)
             {
-                _logger.LogWarning("Aucun Bid trouvé avec l'id {Id}", id);
-                return NotFound(new { message = $"Aucun Bid avec l'id {id}" });
+                return NotFound(new ApiErrorResponse
+                {
+                    Message = $"Aucun Bid trouvé avec l'id {id}"
+                });
             }
 
-            _logger.LogInformation("Lecture du Bid {Id}", id);
             return Ok(bid);
         }
 
         // POST: api/Bid
-        [Authorize(Roles = "Admin,User")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Bid bid)
+        public async Task<IActionResult> Create([FromBody] CreateBidDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                return BadRequest(ApiErrorResponse.FromModelState(ModelState));
+            }
 
-            if (string.IsNullOrWhiteSpace(bid.Account))
-                return BadRequest(new { message = "Le champ Account est requis." });
+            var bid = new Bid
+            {
+                Account = dto.Account,
+                BidType = dto.BidType,
+                BidQuantity = dto.BidQuantity
+            };
 
             await _bidRepository.AddAsync(bid);
 
-            _logger.LogInformation("Bid {Id} créé par {User}", bid.Id, User.Identity?.Name);
             return CreatedAtAction(nameof(GetById), new { id = bid.Id }, bid);
         }
 
         // PUT: api/Bid/{id}
-        [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Bid bid)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateBidDto dto)
         {
-            if (id != bid.Id)
-                return BadRequest(new { message = "L'identifiant ne correspond pas." });
+            if (id != dto.Id)
+            {
+                return BadRequest(new ApiErrorResponse
+                {
+                    Message = "L'identifiant ne correspond pas."
+                });
+            }
 
-            if (!await _bidRepository.ExistsAsync(id))
-                return NotFound(new { message = $"Aucun Bid trouvé avec l'id {id}" });
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiErrorResponse.FromModelState(ModelState));
+            }
+
+            var bid = await _bidRepository.GetByIdAsync(id);
+            if (bid is null)
+            {
+                return NotFound(new ApiErrorResponse
+                {
+                    Message = $"Aucun Bid trouvé avec l'id {id}"
+                });
+            }
+
+            bid.Account = dto.Account;
+            bid.BidType = dto.BidType;
+            bid.BidQuantity = dto.BidQuantity;
 
             await _bidRepository.UpdateAsync(bid);
 
-            _logger.LogInformation("Bid {Id} modifié par {User}", id, User.Identity?.Name);
             return Ok(bid);
         }
 
         // DELETE: api/Bid/{id}
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _bidRepository.DeleteAsync(id);
             if (!deleted)
             {
-                _logger.LogWarning("Tentative de suppression d’un Bid inexistant ({Id})", id);
-                return NotFound(new { message = $"Aucun Bid trouvé avec l'id {id}" });
+                return NotFound(new ApiErrorResponse
+                {
+                    Message = $"Aucun Bid trouvé avec l'id {id}"
+                });
             }
 
-            _logger.LogWarning("Bid {Id} supprimé par {User}", id, User.Identity?.Name);
             return NoContent();
         }
     }

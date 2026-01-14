@@ -1,4 +1,4 @@
-﻿namespace P7CreateRestApi.Dto
+﻿namespace P7CreateRestApi.Dto.User
 {
     public class RegisterUserDto
     {
