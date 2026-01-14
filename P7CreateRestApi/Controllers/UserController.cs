@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P7CreateRestApi.Constants;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Dto;
 
 namespace P7CreateRestApi.Controllers
 {
@@ -130,23 +131,5 @@ namespace P7CreateRestApi.Controllers
             return NoContent();
         }
     }
-
-    // DTOs
-
-    public class RegisterUserDto
-    {
-        public string Email { get; set; } = null!;
-        public string UserName { get; set; } = null!;
-        public string Password { get; set; } = null!;
-        public string? Role { get; set; }
-    }
-
-
-    public class UpdateUserDto
-    {
-        public string? Email { get; set; }
-        public string? UserName { get; set; }
-    }
-
 }
 
