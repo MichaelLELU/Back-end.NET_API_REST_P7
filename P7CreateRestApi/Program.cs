@@ -2,16 +2,17 @@
 using P7CreateRestApi.Config;
 using P7CreateRestApi.Data;
 using P7CreateRestApi.Middlewares;
-using P7CreateRestApi.Services;
 using P7CreateRestApi.Repositories;
 using P7CreateRestApi.Repositories.Interfaces;
+using P7CreateRestApi.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- LOGGING ---
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
+// --- SERILOG ---
+SerilogConfig.AddSerilog();
+builder.Host.UseSerilog();
+
 
 // --- EF Core ---
 builder.Services.AddDbContext<LocalDbContext>(options =>

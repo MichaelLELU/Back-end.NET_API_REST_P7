@@ -1,92 +1,68 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using P7CreateRestApi.Domain;
+using P7CreateRestApi.Dto.Login;
 using P7CreateRestApi.Services;
 
 namespace P7CreateRestApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly JwtService _jwtService;
-        private readonly ILogger<AuthController> _logger;
         private readonly SignInManager<AppUser> _signInManager;
-
+        private readonly JwtService _jwtService;
 
         public AuthController(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            JwtService jwtService,
-            ILogger<AuthController> logger)
+            JwtService jwtService)
         {
             _userManager = userManager;
-            _jwtService = jwtService;
             _signInManager = signInManager;
-            _logger = logger;
+            _jwtService = jwtService;
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthErrorDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
-            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
-            {
-                _logger.LogWarning("Tentative de connexion avec champs vides (IP : {IP})",
-                    HttpContext.Connection.RemoteIpAddress?.ToString());
-                return BadRequest("L'email et le mot de passe sont requis.");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
-            {
-                _logger.LogWarning(
-                    "Échec connexion : email {Email} inexistant (IP : {IP})",
-                    model.Email,
-                    HttpContext.Connection.RemoteIpAddress?.ToString()
-                );
+                return Unauthorized(new AuthErrorDto { Message = "Identifiants invalides." });
 
-                return Unauthorized("Email ou mot de passe invalide.");
-            }
+            var result = await _signInManager.CheckPasswordSignInAsync(
+                user,
+                dto.Password,
+                lockoutOnFailure: true
+            );
 
-            var validPassword = await _userManager.CheckPasswordAsync(user, model.Password);
-
-            if (!validPassword)
-            {
-                _logger.LogWarning(
-                    "Échec connexion : mauvais mot de passe pour {Email} (IP : {IP})",
-                    model.Email,
-                    HttpContext.Connection.RemoteIpAddress?.ToString()
-                );
-
-                return Unauthorized("Email ou mot de passe invalide.");
-            }
+            if (!result.Succeeded)
+                return Unauthorized(new AuthErrorDto { Message = "Identifiants invalides." });
 
             var token = _jwtService.GenerateToken(user);
 
-            _logger.LogInformation(
-                "Connexion réussie pour {Email} à {Time} (IP : {IP})",
-                user.Email,
-                DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
-                HttpContext.Connection.RemoteIpAddress?.ToString()
-            );
+            var response = new LoginResponseDto
+            {
+                Token = token,
+                Expiration = DateTime.UtcNow.AddHours(2) 
+            };
 
-            return Ok(new { token });
+            return Ok(response);
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-
             await _signInManager.SignOutAsync();
-
-            _logger.LogInformation("Déconnexion effectuée à {Time} depuis IP: {IP}",
-                DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
-                HttpContext.Connection.RemoteIpAddress);
-
             return Ok(new { message = "Déconnexion réussie." });
         }
-    
-}
+    }
 }

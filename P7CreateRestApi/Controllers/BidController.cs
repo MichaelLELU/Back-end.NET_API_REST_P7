@@ -28,7 +28,16 @@ namespace Dot.Net.WebApi.Controllers
         public async Task<IActionResult> GetAll()
         {
             var bids = await _bidRepository.GetAllAsync();
-            return Ok(bids);
+
+            var result = bids.Select(b => new BidDto
+            {
+                Id = b.Id,
+                Account = b.Account,
+                BidType = b.BidType,
+                BidQuantity = b.BidQuantity
+            });
+
+            return Ok(result);
         }
 
         // GET: api/Bid/{id}
@@ -44,7 +53,15 @@ namespace Dot.Net.WebApi.Controllers
                 });
             }
 
-            return Ok(bid);
+            var dto = new BidDto
+            {
+                Id = bid.Id,
+                Account = bid.Account,
+                BidType = bid.BidType,
+                BidQuantity = bid.BidQuantity
+            };
+
+            return Ok(dto);
         }
 
         // POST: api/Bid
@@ -52,9 +69,7 @@ namespace Dot.Net.WebApi.Controllers
         public async Task<IActionResult> Create([FromBody] CreateBidDto dto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ApiErrorResponse.FromModelState(ModelState));
-            }
 
             var bid = new Bid
             {
@@ -65,7 +80,11 @@ namespace Dot.Net.WebApi.Controllers
 
             await _bidRepository.AddAsync(bid);
 
-            return CreatedAtAction(nameof(GetById), new { id = bid.Id }, bid);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = bid.Id },
+                new IdResponseDto { Id = bid.Id }
+            );
         }
 
         // PUT: api/Bid/{id}
@@ -81,9 +100,7 @@ namespace Dot.Net.WebApi.Controllers
             }
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ApiErrorResponse.FromModelState(ModelState));
-            }
 
             var bid = await _bidRepository.GetByIdAsync(id);
             if (bid is null)
@@ -100,7 +117,15 @@ namespace Dot.Net.WebApi.Controllers
 
             await _bidRepository.UpdateAsync(bid);
 
-            return Ok(bid);
+            var result = new BidDto
+            {
+                Id = bid.Id,
+                Account = bid.Account,
+                BidType = bid.BidType,
+                BidQuantity = bid.BidQuantity
+            };
+
+            return Ok(result);
         }
 
         // DELETE: api/Bid/{id}

@@ -28,7 +28,16 @@ namespace Dot.Net.WebApi.Controllers
         public async Task<IActionResult> GetAll()
         {
             var curves = await _curveRepository.GetAllAsync();
-            return Ok(curves);
+
+            var result = curves.Select(c => new CurvePointDto
+            {
+                Id = c.Id,
+                CurveId = c.CurveId,
+                Term = c.Term,
+                CurvePointValue = c.CurvePointValue
+            });
+
+            return Ok(result);
         }
 
         // GET: api/Curve/{id}
@@ -44,7 +53,15 @@ namespace Dot.Net.WebApi.Controllers
                 });
             }
 
-            return Ok(curve);
+            var dto = new CurvePointDto
+            {
+                Id = curve.Id,
+                CurveId = curve.CurveId,
+                Term = curve.Term,
+                CurvePointValue = curve.CurvePointValue
+            };
+
+            return Ok(dto);
         }
 
         // POST: api/Curve
@@ -52,9 +69,7 @@ namespace Dot.Net.WebApi.Controllers
         public async Task<IActionResult> Create([FromBody] CreateCurvePointDto dto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ApiErrorResponse.FromModelState(ModelState));
-            }
 
             var curve = new CurvePoint
             {
@@ -65,7 +80,11 @@ namespace Dot.Net.WebApi.Controllers
 
             await _curveRepository.AddAsync(curve);
 
-            return CreatedAtAction(nameof(GetById), new { id = curve.Id }, curve);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = curve.Id },
+                new IdResponseDto { Id = curve.Id }
+            );
         }
 
         // PUT: api/Curve/{id}
@@ -81,9 +100,7 @@ namespace Dot.Net.WebApi.Controllers
             }
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ApiErrorResponse.FromModelState(ModelState));
-            }
 
             var curve = await _curveRepository.GetByIdAsync(id);
             if (curve is null)
@@ -100,7 +117,15 @@ namespace Dot.Net.WebApi.Controllers
 
             await _curveRepository.UpdateAsync(curve);
 
-            return Ok(curve);
+            var result = new CurvePointDto
+            {
+                Id = curve.Id,
+                CurveId = curve.CurveId,
+                Term = curve.Term,
+                CurvePointValue = curve.CurvePointValue
+            };
+
+            return Ok(result);
         }
 
         // DELETE: api/Curve/{id}

@@ -14,7 +14,7 @@ namespace P7CreateRestApi.Dto.Bid
         public string BidType { get; set; } = null!;
 
         [Required(ErrorMessage = "La quantité de l’offre est obligatoire.")]
-        [Range(1, double.MaxValue, ErrorMessage = "La quantité doit être supérieure à 0.")]
+        [Range(double.MinValue, double.MaxValue, ErrorMessage = "La quantité doit être supérieure à 0.")]
         public double BidQuantity { get; set; }
     }
 }
