@@ -26,17 +26,17 @@ namespace P7CreateRestApi.Controllers
 
         [HttpPost("login")]
         [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(AuthErrorDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
 
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
-                return Unauthorized(new AuthErrorDto { Message = "Identifiants invalides." });
+                return UnauthorizedProblem();
 
             var result = await _signInManager.CheckPasswordSignInAsync(
                 user,
@@ -45,14 +45,12 @@ namespace P7CreateRestApi.Controllers
             );
 
             if (!result.Succeeded)
-                return Unauthorized(new AuthErrorDto { Message = "Identifiants invalides." });
-
-            var token = _jwtService.GenerateToken(user);
+                return UnauthorizedProblem();
 
             var response = new LoginResponseDto
             {
-                Token = token,
-                Expiration = DateTime.UtcNow.AddHours(2) 
+                Token = _jwtService.GenerateToken(user),
+                Expiration = DateTime.UtcNow.AddHours(2)
             };
 
             return Ok(response);
@@ -63,6 +61,16 @@ namespace P7CreateRestApi.Controllers
         {
             await _signInManager.SignOutAsync();
             return Ok(new { message = "Déconnexion réussie." });
+        }
+
+        private IActionResult UnauthorizedProblem()
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Title = "Authentication failed",
+                Detail = "Identifiants invalides.",
+                Status = StatusCodes.Status401Unauthorized
+            });
         }
     }
 }

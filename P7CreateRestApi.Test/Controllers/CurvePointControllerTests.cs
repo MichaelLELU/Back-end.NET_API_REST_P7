@@ -6,6 +6,7 @@ using Dot.Net.WebApi.Controllers;
 using P7CreateRestApi.Domain;
 using P7CreateRestApi.Repositories.Interfaces;
 using P7CreateRestApi.Dto.CurvePoint;
+using P7CreateRestApi.Dto.Common;
 using System.Threading.Tasks;
 
 namespace P7CreateRestApi.Tests.Controllers
@@ -28,7 +29,13 @@ namespace P7CreateRestApi.Tests.Controllers
         public async Task GetById_ReturnsOk_WhenCurveExists()
         {
             // Arrange
-            var curve = new CurvePoint { Id = 1, CurveId = 1, Term = 10, CurvePointValue = 100 };
+            var curve = new CurvePoint
+            {
+                Id = 1,
+                CurveId = 1,
+                Term = 10,
+                CurvePointValue = 100
+            };
 
             _curveRepositoryMock
                 .Setup(r => r.GetByIdAsync(1))
@@ -39,8 +46,13 @@ namespace P7CreateRestApi.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedCurve = Assert.IsType<CurvePoint>(okResult.Value);
+
+            var returnedCurve = Assert.IsType<CurvePointDto>(okResult.Value);
+
             Assert.Equal(1, returnedCurve.Id);
+            Assert.Equal(1, returnedCurve.CurveId);
+            Assert.Equal(10, returnedCurve.Term);
+            Assert.Equal(100, returnedCurve.CurvePointValue);
         }
 
         [Fact]
@@ -78,7 +90,6 @@ namespace P7CreateRestApi.Tests.Controllers
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
-
         [Fact]
         public async Task Create_ReturnsCreatedAtAction_WhenCurveIsValid()
         {
@@ -90,8 +101,10 @@ namespace P7CreateRestApi.Tests.Controllers
                 CurvePointValue = 100
             };
 
+            // Simule EF Core qui génère un Id
             _curveRepositoryMock
                 .Setup(r => r.AddAsync(It.IsAny<CurvePoint>()))
+                .Callback<CurvePoint>(c => c.Id = 1)
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -100,14 +113,18 @@ namespace P7CreateRestApi.Tests.Controllers
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
 
-            var returnedCurve = Assert.IsType<CurvePoint>(createdResult.Value);
-            Assert.Equal(10, returnedCurve.Term);
-            Assert.Equal(100, returnedCurve.CurvePointValue);
+            var returnedDto = Assert.IsType<IdResponseDto>(createdResult.Value);
+
+            Assert.Equal(1, returnedDto.Id);
+
+            Assert.Equal(
+                nameof(_controller.GetById),
+                createdResult.ActionName
+            );
 
             _curveRepositoryMock.Verify(
                 r => r.AddAsync(It.IsAny<CurvePoint>()),
                 Times.Once);
         }
-
     }
 }
