@@ -50,7 +50,6 @@ namespace P7CreateRestApi.Controllers
             var response = new LoginResponseDto
             {
                 Token = _jwtService.GenerateToken(user),
-                Expiration = DateTime.UtcNow.AddHours(2)
             };
 
             return Ok(response);

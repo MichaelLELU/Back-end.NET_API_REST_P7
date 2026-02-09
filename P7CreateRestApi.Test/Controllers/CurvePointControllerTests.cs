@@ -9,7 +9,7 @@ using P7CreateRestApi.Dto.CurvePoint;
 using P7CreateRestApi.Dto.Common;
 using System.Threading.Tasks;
 
-namespace P7CreateRestApi.Tests.Controllers
+namespace P7CreateRestApi.Test.Controllers
 {
     public class CurveControllerTests
     {

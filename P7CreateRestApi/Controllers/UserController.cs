@@ -27,7 +27,7 @@ namespace P7CreateRestApi.Controllers
             _logger = logger;
         }
 
-        // GET ALL USERS (ADMIN ONLY)
+        // GET ALL USERS 
         [HttpGet]
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> GetAll()
@@ -57,7 +57,7 @@ namespace P7CreateRestApi.Controllers
             return Ok(new { user.Id, user.Email });
         }
 
-        // CREATE USER (ADMIN ONLY)
+        // CREATE USER
         [HttpPost]
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> Create([FromBody] RegisterUserDto model)
