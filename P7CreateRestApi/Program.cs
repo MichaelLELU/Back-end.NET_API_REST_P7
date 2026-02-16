@@ -18,7 +18,7 @@ builder.Host.UseSerilog();
 builder.Services.AddDbContext<LocalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// --- Repositories --- possibilité de cree une extantion afin d'ingecter les repository en une seule ligne
+// --- Repositories --- 
 builder.Services.AddScoped<IBidRepository, BidRepository>();
 builder.Services.AddScoped<ICurvePointRepository, CurvePointRepository>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();

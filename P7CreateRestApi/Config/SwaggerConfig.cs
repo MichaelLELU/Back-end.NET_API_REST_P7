@@ -9,7 +9,6 @@ namespace P7CreateRestApi.Config
         {
             services.AddSwaggerGen(options =>
             {
-                // Infos générales
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Findexium API",
@@ -17,7 +16,6 @@ namespace P7CreateRestApi.Config
                     Description = "API sécurisée avec JWT et Identity"
                 });
 
-                // Schéma de sécurité (JWT)
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -28,7 +26,6 @@ namespace P7CreateRestApi.Config
                     Description = "Entrer le token JWT : **Bearer {votre_token}**"
                 });
 
-                // Appliquer le schéma de sécurité globalement
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {

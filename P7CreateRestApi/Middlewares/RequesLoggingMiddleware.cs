@@ -16,16 +16,15 @@ namespace P7CreateRestApi.Middlewares
         public async Task InvokeAsync(HttpContext context)
         {
             var stopwatch = Stopwatch.StartNew();
-            var user = context.User.Identity?.Name ?? "Anonyme";
 
-            _logger.LogInformation("➡️ {Method} {Path} appelé par {User}",
-                context.Request.Method, context.Request.Path, user);
+            _logger.LogInformation("➡️ {Method} {Path} appelé",
+                context.Request.Method, context.Request.Path);
 
             await _next(context);
 
             stopwatch.Stop();
 
-            _logger.LogInformation("⬅️ {Method} {Path} terminé avec statut {StatusCode} ({Elapsed} ms)",
+            _logger.LogInformation("⬅️ {Method} {Path} terminé avec statut {StatusCode} ({Elapsed} ms)", 
                 context.Request.Method, context.Request.Path, context.Response.StatusCode, stopwatch.ElapsedMilliseconds);
         }
     }

@@ -29,7 +29,6 @@ namespace P7CreateRestApi.Config
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                 };
 
-                // 🔍 Pour traquer les erreurs JWT
                 options.Events = new JwtBearerEvents
                 {
                     OnAuthenticationFailed = context =>
